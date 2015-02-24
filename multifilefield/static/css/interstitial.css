@@ -1,0 +1,54 @@
+.interstitial-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: auto;
+  z-index: 2000;
+  visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  -moz-transform: translateX(-50%) translateY(-50%);
+  -ms-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.interstitial-show {
+  visibility: visible;
+}
+
+.interstitial-overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  opacity: 0;
+  background: rgba(0,0,0,0.8);
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+}
+
+.interstitial-show ~ .interstitial-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.interstitial-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 20px;
+  margin: 6px;
+  -webkit-appearance: button;
+  border: 1px solid rgba(215, 215, 215, 0.6);
+  border-radius: 5px;
+  background-color: #f1f1f1;
+  height: 24px;
+  width: 24px;
+}

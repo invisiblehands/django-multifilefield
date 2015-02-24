@@ -1,0 +1,36 @@
+{% load static %}
+{% if interstitial %}
+
+<link rel="stylesheet" href="{% get_static_prefix %}css/interstitial.css">
+
+<div
+    id="interstitial"
+    class="interstitial-modal"
+    style="
+        max-height: {{interstitial.image.height}}px;
+        max-width: {{interstitial.image.width}}px;
+    "
+    >
+
+    <a
+        target="_blank"
+        href="{{interstitial.link}}"
+        class="interstitial-content"
+        style="
+            display: block;
+            background-image: url('{% get_media_prefix %}{{interstitial.image}}');
+            background-position: center center;
+            background-repeat: no-repeat;
+            margin: 0 auto;
+            height: {{interstitial.image.height}}px;
+            width: {{interstitial.image.width}}px;
+        ">
+    </a>
+    {% if close %}
+    <input type="button" class="interstitial-close" value="&times;" />
+    {% endif %}
+</div>
+
+<div class="interstitial-overlay"></div>
+<script src="{% get_static_prefix %}js/interstitial.js"></script>
+{% endif %}

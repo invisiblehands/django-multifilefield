@@ -8,4 +8,4 @@ Currently broken, migrating from another application.
 ### Requirements
 
 - django >= 1.5
-- django-floppyforms==1.1.1
+- django-floppyforms>=1.1.1

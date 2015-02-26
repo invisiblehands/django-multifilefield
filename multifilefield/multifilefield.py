@@ -1,5 +1,4 @@
-import copy, math, six
-import floppyforms as forms
+import copy, math, six, floppyforms as forms
 
 from itertools import chain
 
@@ -7,6 +6,7 @@ from django.utils.encoding import force_unicode
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+from multifilefield.models import UploadedFile
 
 
 class ClearableFilesWidget(forms.MultiWidget):
@@ -110,6 +110,7 @@ class FilesField(forms.FileField):
         rank = min(rank, len(suffixes) - 1)
         human = nbytes / (1024.0 ** rank)
         f = ('%.2f' % human).rstrip('0').rstrip('.')
+
         return '%s %s' % (f, suffixes[rank])
 
 
@@ -132,9 +133,9 @@ class FilesField(forms.FileField):
                         'max_size': self.humanize(self.maximum_file_size)})
 
 
+
 class ClearableFilesField(forms.MultiValueField):
     def __init__(self, *args, **kwargs):
-        from supasurvey.models import UploadedFile
         kwargs['required'] = False
 
         label = kwargs.pop('label')
@@ -187,4 +188,3 @@ class ClearableFilesField(forms.MultiValueField):
             files_to_delete = data_list[1]
 
         return (self.uploaded_original, files_to_upload, files_to_delete)
-

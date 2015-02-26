@@ -3,7 +3,7 @@ import math, floppyforms as forms
 from django.core.exceptions import ValidationError
 
 from multifilefield.models import UploadedFile
-from multifielfield.widgets import ClearableFilesWidget, ClearCheckboxSelectMultipleWidget, FilesInputWidget
+from multifilefield.widgets import ClearableFilesWidget, ClearCheckboxSelectMultipleWidget, FilesInputWidget
 
 
 class FilesField(forms.FileField):

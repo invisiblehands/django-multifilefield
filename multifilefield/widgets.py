@@ -1,4 +1,5 @@
 import six, copy, floppyforms as forms
+
 from itertools import chain
 
 
@@ -18,8 +19,7 @@ class ClearCheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
     template_name = 'floppyforms/clearcheckbox_select.html'
 
     def get_context(self, name, value, attrs=None, choices=()):
-        if not hasattr(value, '__iter__') or isinstance(value,
-                                                        six.string_types):
+        if not hasattr(value, '__iter__') or isinstance(value, six.string_types):
             value = [value]
 
         context = super(ClearCheckboxSelectMultipleWidget, self).get_context(name, value, attrs)

@@ -47,11 +47,13 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         'Django>=1.5.0',
-        'django-floppyforms==1.1.1'
+        'django-floppyforms==1.1.1',
+        'six==1.9.0'
     ],
     tests_require=[
         'Django>=1.5.0',
-        'django-floppyforms==1.1.1'
+        'django-floppyforms==1.1.1',
+        'six==1.9.0'
     ],
     cmdclass={'test': TestCommand},
     classifiers=[

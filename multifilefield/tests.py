@@ -6,7 +6,7 @@ from django.core.files import File
 from django.core.files.storage import Storage
 from django.test import TestCase
 
-from multifilefield import ClearableFilesField
+from multifilefield import MultiFileField, MultiFileFieldMixin
 from multifilefield.models import UploadedFile
 
 
@@ -14,7 +14,7 @@ from multifilefield.models import UploadedFile
 # http://stackoverflow.com/questions/4283933/what-is-the-clean-way-to-unittest-filefield-in-django
 
 
-class ClearableFilesFieldTest(TestCase):
+class MultiFileFieldTest(TestCase):
     def setUp(self):
         self.create_mock_files()
         self.create_mock_storage()
@@ -41,10 +41,10 @@ class ClearableFilesFieldTest(TestCase):
     def test_init(self):
         """Test that initializing the field doesn't break."""
 
-        clearable_files_field = ClearableFilesField(
+        uploads = MultiFileField(
             required = False,
-            model = UploadedFile,
             label ='Upload files',
+            manager = UploadedFile.objects,
             max_file_size = 1024*1024*5,
             max_num_files = 5,
             min_num_files = 0)
@@ -54,11 +54,11 @@ class ClearableFilesFieldTest(TestCase):
         """Test that initializing the field doesn't break."""
 
         queryset = UploadedFile.objects.all()
-        clearable_files_field = ClearableFilesField(
+        uploads = MultiFileField(
             required = False,
-            model = UploadedFile,
-            queryset = queryset,
             label = 'Upload files',
+            manager = UploadedFile.objects,
+            queryset = queryset,
             max_file_size = 1024*1024*5,
             max_num_files = 5,
             min_num_files = 0)
@@ -68,14 +68,28 @@ class ClearableFilesFieldTest(TestCase):
         """Test that initializing the field doesn't break."""
 
         queryset = UploadedFile.objects.all()
-        clearable_files_field = ClearableFilesField(
+        clearable_files_field = MultiFileField(
             required = False,
-            model = UploadedFile,
-            queryset = queryset,
             label = 'Upload files',
+            manager = UploadedFile.objects,
+            queryset = queryset,
             max_file_size = 1024*1024*5,
             max_num_files = 5,
             min_num_files = 0,
             max_num_uploaded = 10)
 
         #self.assertEqual()
+
+
+
+
+class TestForm1(MultiFileFieldMixin, forms.Form):
+    uploads = MultiFileField(
+        label='Uploads')
+
+
+class FormWithMultiFileFieldTest(TestCase):
+    def test_init(self):
+        """Test that initializing the form doesn't break."""
+
+        self.form = TestForm1()

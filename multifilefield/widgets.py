@@ -16,7 +16,7 @@ class ClearableFilesWidget(forms.MultiWidget):
 
 
 class ClearCheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
-    template_name = 'floppyforms/clearcheckbox_select.html'
+    template_name = 'floppyforms/remove-files.html'
 
     def get_context(self, name, value, attrs=None, choices=()):
         if not hasattr(value, '__iter__') or isinstance(value, six.string_types):
@@ -38,7 +38,7 @@ class ClearCheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
 
 
 class FilesInputWidget(forms.FileInput):
-    template_name = 'floppyforms/filesinput.html'
+    template_name = 'floppyforms/add-files.html'
 
     def __init__(self, *args, **kwargs):
         super(FilesInputWidget, self).__init__(*args, **kwargs)

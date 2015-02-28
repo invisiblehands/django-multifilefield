@@ -1,13 +1,19 @@
 {% if choices %}
-<div class="clear-choices">
-    <label>Remove attached files:</label>
+<div class="clear-files">
+    {% if label %}
+    <label>{{ label }}</label>
+    {% endif %}
+
     <ul>
     {% for choice in choices %}
         <li class="checkbox"><label for="{{ attrs.id }}_{{ forloop.counter }}"><input {% if choice.0 in value %}checked="checked" {% endif %}type="checkbox" id="{{ attrs.id }}_{{ forloop.counter }}" name="{{ name }}" value="{{ choice.0 }}"><span class="glyphicon glyphicon-file"></span> {{ choice.1 }}</label>&nbsp;&nbsp;<a href="{{choice.2}}" target="_blank" class="preview-file">(Download)</a></li>
     {% endfor %}
     </ul>
+
+    {% if help_text %}
     <p class="help-block">
-      To remove attached files click their associated checkbox and click save.
+      {{ help_text }}
     </p>
+    {% endif %}
 </div>
 {% endif %}

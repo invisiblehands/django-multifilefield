@@ -5,7 +5,17 @@ from django.core.exceptions import ValidationError
 from multifilefield.widgets import ClearableFilesWidget, ClearCheckboxSelectMultipleWidget, FilesInputWidget
 
 
-class FilesField(forms.FileField):
+
+class RemoveFilesField(forms.MultipleChoiceField):
+    """This field is a modified multiplechoicefield that displays
+    a list of uploaded files allowing the user to choose which
+    they would like to clear."""
+
+    widget = ClearCheckboxSelectMultipleWidget
+
+
+
+class AddFilesField(forms.FileField):
     """This field is a modified file field that handles
     multiple files rather than a single file."""
 
@@ -79,46 +89,61 @@ class FilesField(forms.FileField):
 
 
 
-class ClearableFilesField(forms.MultiValueField):
-    def __init__(self, *args, **kwargs):
+class MultiFileField(forms.MultiValueField):
+    """
+    This is a clearable files field.  It uses the html5 "multiple" attribute
+    on a fileupload input to allow for multiple file uploads, if available
+    through the browser.  The files are then validated.
 
+    If the developer provides a model manager, this project also provides
+    mechanisms for storing files and also populating clearable choices, so
+    the user can both upload and clear.
+    """
+
+    def __init__(self, *args, **kwargs):
         default_error_messages = {
             'total_num': u'No more than %(total_num)s files in total, please (tried %(attempt_num)s).',
         }
 
-        required        = kwargs.pop('required', False)
-        label           = kwargs.pop('label', 'Attach files')
+        required            = kwargs.pop('required', False)
+        label               = kwargs.pop('label', 'Uploads')
+        add_label           = kwargs.pop('add_label', 'Attach files:')
+        add_help_text       = kwargs.pop('add_help_text', 'Hold shift to select multiple files.  To upload selected files click save.')
+        remove_label        = kwargs.pop('remove_label', 'Remove attached files:')
+        remove_help_text    = kwargs.pop('remove_help_text', 'To remove attached files click their associated checkbox and click save.')
+
         max_file_size   = kwargs.pop('max_file_size', 1024*1024*5)
         max_num_files   = kwargs.pop('max_num_files', 5)
         min_num_files   = kwargs.pop('min_num_files', 0)
 
-        self.max_num_uploaded   = kwargs.pop('max_num_uploaded', None)
-        self.FileCls            = kwargs.pop('model')
+        self.max_num_total   = kwargs.pop('max_num_total', None)
+        self.manager            = kwargs.pop('manager')
         self.queryset           = kwargs.pop('queryset', [])
 
 
-        upload_field = FilesField(
-                label = None,
-                max_num = max_num_files,
-                min_num = min_num_files,
-                max_file_size = max_file_size)
+        add_field = AddFilesField(
+            label = add_label,
+            help_text = add_help_text,
+            max_num = max_num_files,
+            min_num = min_num_files,
+            max_file_size = max_file_size)
 
 
-        clear_field = forms.MultipleChoiceField(
-                label = None,
-                choices = self.get_file_choices(),
-                widget = ClearCheckboxSelectMultipleWidget)
+        remove_field = RemoveFilesField(
+            label = remove_label,
+            help_text = remove_help_text,
+            choices = self.get_file_choices())
 
 
-        fields = [upload_field, clear_field]
-        widgets = [upload_field.widget, clear_field.widget]
+        fields = [add_field, remove_field]
+        widgets = [add_field.widget, remove_field.widget]
         widget = ClearableFilesWidget(widgets = widgets)
 
 
-        super(ClearableFilesField, self).__init__(
-                label = label,
-                widget = widget,
-                fields = fields)
+        super(MultiFileField, self).__init__(
+            label = label,
+            widget = widget,
+            fields = fields)
 
 
     def get_file_choices(self):
@@ -126,7 +151,7 @@ class ClearableFilesField(forms.MultiValueField):
 
 
     def validate(self, data_list):
-        if self.max_num_uploaded and data_list:
+        if self.max_num_total and data_list:
             files_to_upload = data_list[0]
             files_to_delete = data_list[1]
 
@@ -134,9 +159,9 @@ class ClearableFilesField(forms.MultiValueField):
             files_total -= len(files_to_delete)
             files_total += len(files_to_upload)
 
-            if files_total > self.max_num_uploaded:
+            if files_total > self.max_num_total:
                 raise ValidationError(self.error_messages['total_num'] % {
-                    'total_num': max_num_uploaded,
+                    'total_num': max_num_total,
                     'attempt_num': files_total})
 
 

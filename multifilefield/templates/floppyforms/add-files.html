@@ -1,0 +1,11 @@
+<div class="add-files">
+    {% if label %}
+    <label>{{ label }}</label>
+    {% endif %}
+
+    <input type="{{ type }}" name="{{ name }}"{% if value %} value="{{ value }}"{% endif %}{% if required %} required{% endif %}{% include "floppyforms/attrs.html" %}>
+
+    {% if help_text %}
+    <p class="help-block">{{ help_text }}</p>
+    {% endif %}
+</div>

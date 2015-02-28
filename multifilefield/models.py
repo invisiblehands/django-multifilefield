@@ -19,6 +19,7 @@ def upload_to(instance, name):
     return get_path(name)
 
 
+
 class UploadedFile(models.Model):
     upload = models.FileField(upload_to=upload_to, max_length=400)
     created_at = models.DateTimeField('created', null=True, blank=True, default=datetime.now)

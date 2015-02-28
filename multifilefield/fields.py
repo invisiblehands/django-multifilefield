@@ -34,20 +34,20 @@ class AddFilesField(forms.FileField):
         self.max_num        = kwargs.pop('max_num', None)
         self.max_file_size  = kwargs.pop('max_file_size', None)
 
-        super(FilesField, self).__init__(*args, **kwargs)
+        super(AddFilesField, self).__init__(*args, **kwargs)
 
 
     def to_python(self, data):
         ret = []
         for item in data:
-            i = super(FilesField, self).to_python(item)
+            i = super(AddFilesField, self).to_python(item)
             if i:
                 ret.append(i)
         return ret
 
 
     def clean(self, data, initial=None):
-        return super(FilesField, self).clean(data, initial)
+        return super(AddFilesField, self).clean(data, initial)
 
 
     def humanize(self, nbytes):
@@ -62,7 +62,7 @@ class AddFilesField(forms.FileField):
 
 
     def validate(self, data):
-        super(FilesField, self).validate(data)
+        super(AddFilesField, self).validate(data)
 
         uploaded_files = data
         num_files = len(uploaded_files)
@@ -116,9 +116,9 @@ class MultiFileField(forms.MultiValueField):
         max_num_files   = kwargs.pop('max_num_files', 5)
         min_num_files   = kwargs.pop('min_num_files', 0)
 
-        self.max_num_total   = kwargs.pop('max_num_total', None)
-        self.manager            = kwargs.pop('manager')
-        self.queryset           = kwargs.pop('queryset', [])
+        self.max_num_total  = kwargs.pop('max_num_total', None)
+        self.manager        = kwargs.pop('manager', None)
+        self.queryset       = self.manager.all() if self.manager else []
 
 
         add_field = AddFilesField(

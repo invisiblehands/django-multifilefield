@@ -13,9 +13,9 @@ class FilesField(forms.FileField):
 
 
     default_error_messages = {
-        'min_num': u'No less than %(min_num)s files uploaded at a time, please (received %(num_files)s).',
-        'max_num': u'No more than %(max_num)s files uploaded at a time, please (received %(num_files)s).',
-        'file_size': u'File %(uploaded_file_name)s exceeds maximum upload size of %(max_size)s.',
+        'min_num': 'No less than %(min_num)s files uploaded at a time, please (received %(num_files)s).',
+        'max_num': 'No more than %(max_num)s files uploaded at a time, please (received %(num_files)s).',
+        'file_size': 'File %(uploaded_file_name)s exceeds maximum upload size of %(max_size)s.',
     }
 
 
@@ -61,9 +61,14 @@ class FilesField(forms.FileField):
             num_files = 0
 
         if num_files < self.min_num:
-            raise ValidationError(self.error_messages['min_num'] % {'min_num': self.min_num, 'num_files': num_files})
-        elif self.max_num and num_files > self.max_num:
-            raise ValidationError(self.error_messages['max_num'] % {'max_num': self.max_num, 'num_files': num_files})
+            raise ValidationError(self.error_messages['min_num'] % {
+                'min_num': self.min_num,
+                'num_files': num_files})
+
+        if self.max_num and num_files > self.max_num:
+            raise ValidationError(self.error_messages['max_num'] % {
+                'max_num': self.max_num,
+                'num_files': num_files})
 
         if self.max_file_size:
             for uploaded_file in uploaded_files:

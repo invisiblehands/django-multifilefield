@@ -24,10 +24,11 @@ class ClearableFilesFieldTest(TestCase):
     def test_init_queryset(self):
         """Test that initializing the field doesn't break."""
 
+        queryset = UploadedFile.objects.all()
         clearable_files_field = ClearableFilesField(
             required = False,
             model = UploadedFile,
-            queryset = UploadedFile.objects.all()
+            queryset = queryset,
             label = 'Upload files',
             max_file_size = 1024*1024*5,
             max_num_files = 5,
@@ -37,10 +38,11 @@ class ClearableFilesFieldTest(TestCase):
     def test_init_queryset_maximum(self):
         """Test that initializing the field doesn't break."""
 
+        queryset = UploadedFile.objects.all()
         clearable_files_field = ClearableFilesField(
             required = False,
             model = UploadedFile,
-            queryset = UploadedFile.objects.all()
+            queryset = queryset,
             label = 'Upload files',
             max_file_size = 1024*1024*5,
             max_num_files = 5,

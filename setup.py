@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#
-from distutils.core import setup
-from distutils.core import Command
+
+from setuptools import setup
+from setuptools import Command
 
 
 class TestCommand(Command):

@@ -23,9 +23,7 @@ class ClearCheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
             value = [value]
 
         context = super(ClearCheckboxSelectMultipleWidget, self).get_context(name, value, attrs)
-
-        if self.allow_multiple_selected:
-            context['attrs']['multiple'] = "multiple"
+        context['attrs']['multiple'] = 'multiple'
 
         new_choices = []
         for option_value, uploaded_file in chain(self.choices, choices):
@@ -33,7 +31,7 @@ class ClearCheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
             url = uploaded_file.get_absolute_url()
             new_choices.append((option_value, option_label, url))
 
-        context["choices"] = new_choices
+        context['choices'] = new_choices
 
         return context
 

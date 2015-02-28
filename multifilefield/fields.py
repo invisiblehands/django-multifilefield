@@ -146,4 +146,8 @@ class ClearableFilesField(forms.MultiValueField):
             files_to_upload = data_list[0]
             files_to_delete = data_list[1]
 
-        return (self.queryset, files_to_upload, files_to_delete)
+        data = (self.queryset, files_to_upload, files_to_delete)
+
+        self.validate(data)
+
+        return data

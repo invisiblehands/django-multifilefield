@@ -56,13 +56,14 @@ class FilesField(forms.FileField):
 
         uploaded_files = data
         num_files = len(uploaded_files)
+
         if len(uploaded_files) and not uploaded_files[0]:
             num_files = 0
+
         if num_files < self.min_num:
             raise ValidationError(self.error_messages['min_num'] % {'min_num': self.min_num, 'num_files': num_files})
         elif self.max_num and num_files > self.max_num:
             raise ValidationError(self.error_messages['max_num'] % {'max_num': self.max_num, 'num_files': num_files})
-        elif self.total_num and
 
         if self.max_file_size:
             for uploaded_file in uploaded_files:

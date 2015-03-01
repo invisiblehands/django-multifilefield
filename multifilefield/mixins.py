@@ -1,13 +1,11 @@
 from django.core.files.storage import FileSystemStorage
 
 
+class NoManagerException(Exception):
+    pass
+
+
 class MultiFileFieldMixin():
-    def __init__(self, *args, **kwargs):
-        # set self.uploaded_files to your UploadedFile Model Manager
-
-        self.uploaded_files = kwargs.pop('manager')
-
-
     def get_storage(self):
         location = settings.STATIC_ROOT
         base_url = settings.STATIC_URL
@@ -19,7 +17,7 @@ class MultiFileFieldMixin():
         storage = self.get_storage()
 
         try:
-            uploaded_file = self.uploaded_files.get(id = filename)
+            uploaded_file = self.manager.get(id = filename)
             storage.delete(uploaded_file.basename)
             uploaded_file.delete()
         except ValueError, e:
@@ -33,7 +31,7 @@ class MultiFileFieldMixin():
 
         relpath = os.path.normpath(storage.get_valid_name(os.path.basename(file_obj.name)))
         filename = storage.save(relpath, file_obj)
-        uploaded_file = self.uploaded_files.create(upload = filename)
+        uploaded_file = self.manager.create(upload = filename)
 
         return uploaded_file.id
 
@@ -52,6 +50,11 @@ class MultiFileFieldMixin():
             original_queryset,
             to_add (list of file to add),
             to_remove (list of ids to remove) """
+
+        self.manager = form.fields[fieldname].manager
+
+        if not self.manager:
+            raise NoManagerException
 
         form_data = form.cleaned_data
         field_data = form_data.pop(fieldname, None)

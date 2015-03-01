@@ -1,1 +1,3 @@
-include README.md
+include setup.py README.md LICENSE MANIFEST.in
+recursive-include multifilefield/static/*
+recursive-include multifilefield/templates/*

@@ -1,4 +1,5 @@
 *.pyc
+*.egg-info
 build/
 dist/
 MANIFEST
@@ -6,3 +7,4 @@ MANIFEST
 .pydevproject
 .DS_Store
 .idea/*
+.sqlite3

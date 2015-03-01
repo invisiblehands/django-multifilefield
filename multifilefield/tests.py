@@ -6,7 +6,8 @@ from django.core.files import File
 from django.core.files.storage import Storage
 from django.test import TestCase
 
-from multifilefield import MultiFileField, MultiFileFieldMixin
+from multifilefield.fields import MultiFileField
+from multifilefield.mixins import MultiFileFieldMixin
 from multifilefield.models import UploadedFile
 
 
@@ -15,9 +16,9 @@ from multifilefield.models import UploadedFile
 
 
 class MultiFileFieldTest(TestCase):
-    def setUp(self):
-        self.create_mock_files()
-        self.create_mock_storage()
+    # def setUp(self):
+    #     self.create_mock_files()
+    #     self.create_mock_storage()
 
 
     def create_mock_files(self):
@@ -26,7 +27,7 @@ class MultiFileFieldTest(TestCase):
 
         self.file_mock = file_mock
 
-    def create_mock_storage():
+    def create_mock_storage(self):
         storage_mock = mock.MagicMock(spec=Storage, name='StorageMock')
         storage_mock.url = mock.MagicMock(name='url')
         storage_mock.url.return_value = '/tmp/test1.jpg'
@@ -82,27 +83,31 @@ class MultiFileFieldTest(TestCase):
 
 
 
-class TestFormNoManager(MultiFileFieldMixin, forms.Form):
-    uploads = MultiFileField(
-        label='Uploads')
-
-
-
-class TestFormWithManager(MultiFileFieldMixin, forms.Form):
-    uploads = MultiFileField(
-        label='Uploads',
-        manager = UploadedFile.objects)
-
-
-
 class FormWithMultiFileFieldTest(TestCase):
-    def test_init(self):
+    """ This TestCase is for testing the form mixin. """
+
+    def setUp(self):
+        class TestFormNoManager(MultiFileFieldMixin, forms.Form):
+            uploads = MultiFileField(
+                label='Uploads')
+
+
+        class TestFormWithManager(MultiFileFieldMixin, forms.Form):
+            uploads = MultiFileField(
+                label='Uploads',
+                manager = UploadedFile.objects)
+
+        self.TestFormNoManager = TestFormNoManager
+        self.TestFormWithManager = TestFormWithManager
+
+
+    def test_init_no_manager(self):
         """Test that initializing the form doesn't break."""
 
-        self.form = TestFormNoManager()
+        self.form = self.TestFormNoManager()
 
 
-    def test_init(self):
+    def test_init_with_manager(self):
         """Test that initializing the form doesn't break."""
 
-        self.form = TestFormWithManager()
+        self.form = self.TestFormWithManager(manager=UploadedFile.objects)

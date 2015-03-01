@@ -1,14 +1,14 @@
+import os
+
+from datetime import datetime
 from django.db import models
 from django.conf import settings
 
-from datetime import datetime
 
-
-MULTIFILEFIELD_ROOT = getattr(settings, 'MULTIFILEFIELD_ROOT', settings.MEDIA_ROOT)
 
 
 def get_path(basename):
-    return MULTIFILEFIELD_ROOT + '/%s' % basename
+    return os.path.join(getattr(settings, 'MULTIFILEFIELD_ROOT', settings.MEDIA_ROOT), basename)
 
 
 def upload_to(instance, name):

@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+import os, sys
+
+from setuptools import setup, find_packages
 from setuptools import Command
+
+
+README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
+os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 
 class TestCommand(Command):
@@ -16,52 +22,75 @@ class TestCommand(Command):
     def run(self):
         from django.conf import settings
 
+
         settings.configure(
             DATABASES = {
                 'default': {
-                    'NAME': ':memory:',
+                    # 'NAME': ':memory:',
+                    # 'TEST_NAME': ':memory:',
+                    'NAME': 'cody.sqlite3',
+                    'TEST_NAME': 'cody.sqlite3',
                     'ENGINE': 'django.db.backends.sqlite3'
                 }
             },
-            INSTALLED_APPS = ('multifilefield',)
+            INSTALLED_APPS = (
+                'django.contrib.admin',
+                'django.contrib.auth',
+                'django.contrib.contenttypes',
+                'django.contrib.sessions',
+                'django.contrib.messages',
+                'django.contrib.staticfiles',
+                'django.contrib.sites',
+                'django.contrib.sitemaps',
+                'floppyforms',
+                'multifilefield',
+            )
         )
 
-        from django.core.management import call_command
         import django
 
-        if django.VERSION[:2] >= (1, 7):
-            django.setup()
 
-        call_command('test', 'multifilefield')
+        if django.VERSION[:2] >= (1, 7):
+            from django.core.management import call_command
+
+            django.setup()
+            call_command('test', 'multifilefield')
+        else:
+            from multifilefield.runtests import runtests
+
+            runtests()
 
 
 setup(
     name='multifilefield',
     version='0.0.1',
-    packages=['multifilefield'],
-    license='MIT',
-    author='Cody Redmond',
-    author_email='cody@invisiblehands.ca',
-    url='https://github.com/invisiblehands/django-multifilefield/',
+    packages=find_packages(),
+    include_package_data=True,
+    license='BSD License',
     description='A pluggable django html5 field for multiple files.',
-    long_description=open('README.md').read(),
+    long_description=README,
+    url='https://github.com/invisiblehands/django-multifilefield/',
+    author_email='cody@invisiblehands.ca',
+    author='Cody Redmond',
     install_requires=[
         'Django>=1.5.0',
-        'django-floppyforms==1.1.1',
-        'six==1.9.0'
+        'django-floppyforms>=1.1.1',
+        'six>=1.9.0'
     ],
     tests_require=[
         'Django>=1.5.0',
-        'django-floppyforms==1.1.1',
-        'six==1.9.0',
-        'mock==1.0.1'
+        'django-floppyforms>=1.1.1',
+        'six>=1.9.0',
+        'mock>=1.0.1'
     ],
     cmdclass={'test': TestCommand},
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
+        'Framework :: Django',
+        'License :: OSI Approved :: BSD License'
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
-        'Framework :: Django',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content'
     ],
 )

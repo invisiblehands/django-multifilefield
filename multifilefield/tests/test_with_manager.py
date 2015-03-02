@@ -1,7 +1,7 @@
 from datetime import datetime
 from django import forms
 
-from django.test import TestCase,
+from django.test import TestCase
 
 from multifilefield.fields import MultiFileField, NoFileFieldNameException
 from multifilefield.mixins import MultiFileFieldMixin

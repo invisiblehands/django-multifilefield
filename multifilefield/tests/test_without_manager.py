@@ -6,9 +6,6 @@ from multifilefield.fields import MultiFileField
 from multifilefield.mixins import MultiFileFieldMixin
 
 
-# http://stackoverflow.com/questions/4283933/what-is-the-clean-way-to-unittest-filefield-in-django
-
-
 class MultiFileFieldNoManagerTestCase(TestCase):
     def test_init(self):
         """Test that initializing the field doesn't break."""
@@ -17,7 +14,6 @@ class MultiFileFieldNoManagerTestCase(TestCase):
             label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
-            required = False,
             max_file_size = 1024*1024*5,
             max_num_files = 5,
             min_num_files = 0)
@@ -32,7 +28,6 @@ class MultiFileFieldNoManagerTestCase(TestCase):
             label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
-            required = False,
             max_file_size = 1024*1024*5,
             max_num_files = 5,
             min_num_files = 0)
@@ -47,7 +42,6 @@ class MultiFileFieldNoManagerTestCase(TestCase):
             label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
-            required = False,
             max_file_size = 1024*1024*5,
             max_num_files = 5,
             min_num_files = 0,
@@ -64,7 +58,7 @@ class FormWithMultiFileFieldNoManagerTestCase(TestCase):
     def setUp(self):
         class TestFormNoManager(MultiFileFieldMixin, forms.Form):
             uploads = MultiFileField(
-                label='Uploads')
+                label = 'Uploads')
 
         self.TestFormNoManager = TestFormNoManager
 

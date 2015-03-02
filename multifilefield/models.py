@@ -12,7 +12,6 @@ def get_path(basename):
 
 def upload_to(instance, name):
     # This should be able to handle a foreignkey property specified in meta.
-    #
     # ie: if specified, path would be root/foreignkey.id/basename
 
     return get_path(name)

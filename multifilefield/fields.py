@@ -16,6 +16,9 @@ class RemoveFilesField(forms.MultipleChoiceField):
 
     widget = ClearCheckboxSelectMultipleWidget
 
+    def __init__(self, *args, **kwargs):
+        super(RemoveFilesField, self).__init__(*args, **kwargs)
+
 
 
 class AddFilesField(forms.FileField):
@@ -139,13 +142,15 @@ class MultiFileField(forms.MultiValueField):
             help_text = add_help_text,
             max_num = max_num_files,
             min_num = min_num_files,
-            max_file_size = max_file_size)
+            max_file_size = max_file_size,
+            required = required)
 
 
         remove_field = RemoveFilesField(
             label = remove_label,
             help_text = remove_help_text,
-            choices = choices)
+            choices = choices,
+            required = False)
 
 
         fields = [add_field, remove_field]
@@ -156,7 +161,8 @@ class MultiFileField(forms.MultiValueField):
         super(MultiFileField, self).__init__(
             label = label,
             widget = widget,
-            fields = fields)
+            fields = fields,
+            required = required)
 
 
     def validate(self, data_list):

@@ -5,6 +5,7 @@ from django import forms
 from django.test.utils import override_settings
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import AnonymousUser, User
+from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from multifilefield.fields import MultiFileField, NoFileFieldNameException
@@ -14,6 +15,15 @@ from multifilefield.models import UploadedFile
 
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), 'files')
 TEMP_FILES_DIR = tempfile.mkdtemp(dir=os.path.dirname(__file__))
+
+
+class TestStorage(FileSystemStorage):
+    def __init__(self, *args, **kwargs):
+        super(TestStorage, self).__init__(*args, **kwargs)
+
+        self.location = TEMP_FILES_DIR
+        self.base_url = '/files/'
+
 
 
 def make_files():
@@ -37,9 +47,7 @@ def remove_files():
 
 
 
-@override_settings(MULTIFILEFIELD_ROOT=TEMP_FILES_DIR)
-@override_settings(MULTIFILEFIELD_URL='files')
-class MultiFileFieldQuerysetTestCase(TestCase):
+class MultiFileFieldQuerySetTestCase(TestCase):
     """ Let's test that the queryset is working properly in
     populating the uploaded files."""
 
@@ -47,6 +55,7 @@ class MultiFileFieldQuerysetTestCase(TestCase):
     def setUp(self):
         make_files()
         self.queryset = UploadedFile.objects.all()
+        self.storage = TestStorage()
 
 
     def test_init(self):
@@ -54,7 +63,8 @@ class MultiFileFieldQuerysetTestCase(TestCase):
 
         MultiFileField(
             add_label='Attach files',
-            remove_label='Clear files',
+            clear_label='Clear files',
+            storage = self.storage,
             queryset = self.queryset,
             filefield_name='upload',
             max_file_size = 1024*1024*5,
@@ -89,9 +99,7 @@ class MultiFileFieldQuerysetTestCase(TestCase):
 
 
 
-@override_settings(MULTIFILEFIELD_ROOT=TEMP_FILES_DIR)
-@override_settings(MULTIFILEFIELD_URL='files')
-class FormWithMultiFileFieldQuerysetTestCase(TestCase):
+class FormWithMultiFileFieldQuerySetTestCase(TestCase):
     """ This TestCase is for testing the form mixin. """
 
 
@@ -104,9 +112,11 @@ class FormWithMultiFileFieldQuerysetTestCase(TestCase):
 
         make_files()
         self.queryset = UploadedFile.objects.all()
+        self.storage = TestStorage()
 
         class TestFormWithQueryset(MultiFileFieldMixin, forms.Form):
             uploads = MultiFileField(
+                storage = self.storage,
                 queryset = self.queryset,
                 filefield_name='upload')
 
@@ -178,6 +188,7 @@ class FormWithMultiFileFieldQuerysetTestCase(TestCase):
             cleaned_data = form.cleaned_data
 
         self.assertEqual(len(cleaned_data.get('uploads')), 3)
+
 
     def tearDown(self):
         remove_files()

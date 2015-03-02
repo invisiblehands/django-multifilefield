@@ -1,23 +1,29 @@
 import math, floppyforms as forms
 
 from django.core.exceptions import ValidationError
+from django.core.files import File
+from django.core.files.storage import default_storage
 
-from multifilefield.widgets import ClearableFilesWidget, ClearCheckboxSelectMultipleWidget, FilesInputWidget
+from .widgets import MultiFileWidget, AddFilesWidget, ClearFilesWidget
+
+
+ASSERT_FILE_CHOICES = '"files" argument must be a list of django File objects.'
 
 
 class NoFileFieldNameException(Exception):
-    pass
+    message = 'QuerySet configuration requires filefield_name'
 
 
-class RemoveFilesField(forms.MultipleChoiceField):
+
+class ClearFilesField(forms.MultipleChoiceField):
     """This field is a modified multiplechoicefield that displays
     a list of uploaded files allowing the user to choose which
     they would like to clear."""
 
-    widget = ClearCheckboxSelectMultipleWidget
+    widget = ClearFilesWidget
 
     def __init__(self, *args, **kwargs):
-        super(RemoveFilesField, self).__init__(*args, **kwargs)
+        super(ClearFilesField, self).__init__(*args, **kwargs)
 
 
 
@@ -25,7 +31,7 @@ class AddFilesField(forms.FileField):
     """This field is a modified file field that handles
     multiple files rather than a single file."""
 
-    widget = FilesInputWidget
+    widget = AddFilesWidget
 
 
     default_error_messages = {
@@ -108,76 +114,79 @@ class MultiFileField(forms.MultiValueField):
 
     def __init__(self, *args, **kwargs):
         default_error_messages = {
-            'total_num': u'No more than %(total_num)s files in total, please (tried %(attempt_num)s).',
+            'total_num': 'No more than %(total_num)s files in total, please (tried %(attempt_num)s).',
+            'required': 'At least one file must be uploaded.'
         }
 
-        required            = kwargs.pop('required', False)
         label               = kwargs.pop('label', 'Uploads')
         add_label           = kwargs.pop('add_label', 'Attach files:')
-        add_help_text       = kwargs.pop('add_help_text', 'Hold shift to select multiple files.  To upload selected files click save.')
-        remove_label        = kwargs.pop('remove_label', 'Remove attached files:')
-        remove_help_text    = kwargs.pop('remove_help_text', 'To remove attached files click their associated checkbox and click save.')
+        add_help_text       = kwargs.pop('add_help_text', 'Hold shift to select multiple files.  To upload selected files submit form.')
+        clear_label         = kwargs.pop('clear_label', 'Clear attached files:')
+        clear_help_text     = kwargs.pop('clear_help_text', 'To clear attached files click their associated checkbox and submit form.')
 
         max_file_size   = kwargs.pop('max_file_size', 1024*1024*5)
         max_num_files   = kwargs.pop('max_num_files', 5)
         min_num_files   = kwargs.pop('min_num_files', 0)
 
+        self._required      = kwargs.pop('required', False)
         self.max_num_total  = kwargs.pop('max_num_total', None)
+        self.files          = kwargs.pop('files', None)
         self.queryset       = kwargs.pop('queryset', None)
         self.filefield_name = kwargs.pop('filefield_name', None)
-
+        self.storage        = kwargs.pop('storage', default_storage)
 
         if self.queryset and not self.filefield_name:
             raise NoFileFieldNameException
 
 
-        choices = []
-        if self.queryset:
-            for uploaded_file in self.queryset:
-                choices.append((uploaded_file.id, getattr(uploaded_file, self.filefield_name)))
+        self.choices = choices = self.make_choices_from_arguments()
 
 
-        add_field = AddFilesField(
+        add_files = AddFilesField(
             label = add_label,
             help_text = add_help_text,
             max_num = max_num_files,
             min_num = min_num_files,
             max_file_size = max_file_size,
-            required = required)
+            required = False)
 
 
-        remove_field = RemoveFilesField(
-            label = remove_label,
-            help_text = remove_help_text,
+        clear_files = ClearFilesField(
+            label = clear_label,
+            help_text = clear_help_text,
             choices = choices,
             required = False)
 
 
-        fields = [add_field, remove_field]
-        widgets = [add_field.widget, remove_field.widget]
-        widget = ClearableFilesWidget(widgets = widgets)
+        fields = [add_files, clear_files]
+        widgets = [add_files.widget, clear_files.widget]
+        widget = MultiFileWidget(widgets = widgets)
 
 
         super(MultiFileField, self).__init__(
             label = label,
             widget = widget,
             fields = fields,
-            required = required)
+            required = False)
 
 
-    def validate(self, data_list):
-        if self.max_num_total and data_list:
-            files_to_upload = data_list[0]
-            files_to_delete = data_list[1]
+    def make_choices_from_arguments(self):
+        choices = []
+        if self.queryset:
+            for file_obj in self.queryset:
+                choices.append((file_obj.id, getattr(file_obj, self.filefield_name)))
+        elif self.files:
+            assert all([isinstance(file_obj, File) for file_obj in self.files]), ASSERT_FILE_CHOICES
+            choices = [(file_obj.name.split('/')[-1], file_obj) for file_obj in self.files]
+        else:
+            # raise NoFilesOrQuerySetException
+            pass
 
-            files_total = len(list(self.queryset))
-            files_total -= len(files_to_delete)
-            files_total += len(files_to_upload)
+        return choices
 
-            if files_total > self.max_num_total:
-                raise ValidationError(self.error_messages['total_num'] % {
-                    'total_num': max_num_total,
-                    'attempt_num': files_total})
+
+    def clean(self, *args, **kwargs):
+        return super (MultiFileField, self).clean(*args, **kwargs)
 
 
     def compress(self, data_list):
@@ -197,3 +206,24 @@ class MultiFileField(forms.MultiValueField):
         self.validate(data)
 
         return data
+
+
+    def validate(self, data_list):
+        files_total = len(self.choices)
+
+        if data_list:
+            files_to_upload = data_list[0]
+            files_to_delete = data_list[1]
+            files_total += len(files_to_upload) if files_to_upload else 0
+            files_total -= len(files_to_delete) if files_to_delete else 0
+
+        if self._required:
+            if files_total == 0:
+                raise ValidationError(self.error_messages['required'])
+
+        if self.max_num_total:
+            if files_total > self.max_num_total:
+                raise ValidationError(self.error_messages['total_num'] % {
+                    'total_num': max_num_total,
+                    'attempt_num': files_total})
+

@@ -1,6 +1,8 @@
 from django import forms
 
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from multifilefield.fields import MultiFileField
 from multifilefield.mixins import MultiFileFieldMixin
@@ -8,11 +10,16 @@ from multifilefield.mixins import MultiFileFieldMixin
 
 class MultiFileFieldTestCase(TestCase):
     def test_init(self):
-        """Test that initializing the field doesn't break."""
+        """Test field doesn't break during initialization."""
+
+
+        upload = SimpleUploadedFile('/long/path/uploaded_file.jpeg',
+            'file_content', content_type='image/jpeg')
+
 
         MultiFileField(
             add_label='Attach files',
-            remove_label='Clear files',
+            clear_label='Clear files',
             max_file_size = 1024*1024*5,
             max_num_files = 5,
             min_num_files = 0)
@@ -20,18 +27,25 @@ class MultiFileFieldTestCase(TestCase):
         self.assertTrue(True)
 
 
-    def test_init_maximum(self):
-        """Test that initializing and max_num_total doesn't break."""
+    def test_required(self):
+        """Test field required validation functions properly."""
 
-        MultiFileField(
-            add_label='Attach files',
-            remove_label='Clear files',
-            max_file_size = 1024*1024*5,
-            max_num_files = 5,
-            min_num_files = 0,
-            max_num_total = 10)
+        field = MultiFileField(required=False)
+        field.validate(None)
+        field.validate([None, None])
+        field.validate([[], []])
 
-        self.assertTrue(True)
+        field = MultiFileField(required=True)
+        self.assertRaises(ValidationError, field.validate, None)
+        self.assertRaises(ValidationError, field.validate, [None, None])
+        self.assertRaises(ValidationError, field.validate, [[], []])
+
+        upload = SimpleUploadedFile('uploaded_file.jpeg',
+            'file_content', content_type='image/jpeg')
+
+        field.validate([upload, None])
+        field.validate([[upload], None])
+        field.validate([[upload], []])
 
 
 

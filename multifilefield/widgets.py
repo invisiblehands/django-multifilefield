@@ -3,45 +3,30 @@ import six, copy, floppyforms as forms
 from itertools import chain
 
 
-class ClearableFilesWidget(forms.MultiWidget):
+class MultiFileWidget(forms.MultiWidget):
     def decompress(self, value):
         return [value, None]
 
     def render(self, name, value, *args, **kwargs):
-        return super(ClearableFilesWidget, self).render(name, value, *args, **kwargs)
+        return super(MultiFileWidget, self).render(name, value, *args, **kwargs)
 
     def format_output(self, rendered_widgets):
-        return super(ClearableFilesWidget, self).format_output(rendered_widgets)
+        return super(MultiFileWidget, self).format_output(rendered_widgets)
 
 
 
-class ClearCheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
-    template_name = 'floppyforms/remove-files.html'
-
-    def get_context(self, name, value, attrs=None):
-        if not hasattr(value, '__iter__') or isinstance(value, six.string_types):
-            value = [value]
-
-        context = super(ClearCheckboxSelectMultipleWidget, self).get_context(name, value, attrs)
-        context['attrs']['multiple'] = 'multiple'
-        context['choices'] = self.choices
-
-        return context
-
-
-
-class FilesInputWidget(forms.FileInput):
+class AddFilesWidget(forms.FileInput):
     template_name = 'floppyforms/add-files.html'
 
     def __init__(self, *args, **kwargs):
-        super(FilesInputWidget, self).__init__(*args, **kwargs)
+        super(AddFilesWidget, self).__init__(*args, **kwargs)
 
 
     def render(self, name, value, attrs = {}):
         copied_attrs = copy.copy(attrs)
         copied_attrs['multiple'] = 'multiple'
 
-        return super(FilesInputWidget, self).render(name, value, copied_attrs)
+        return super(AddFilesWidget, self).render(name, value, copied_attrs)
 
 
     def value_from_datadict(self, data, files, name):
@@ -55,3 +40,18 @@ class FilesInputWidget(forms.FileInput):
                     values = [value]
 
         return values
+
+
+
+class ClearFilesWidget(forms.CheckboxSelectMultiple):
+    template_name = 'floppyforms/clear-files.html'
+
+    def get_context(self, name, value, attrs=None):
+        if not hasattr(value, '__iter__') or isinstance(value, six.string_types):
+            value = [value]
+
+        context = super(ClearFilesWidget, self).get_context(name, value, attrs)
+        context['attrs']['multiple'] = 'multiple'
+        context['choices'] = self.choices
+
+        return context

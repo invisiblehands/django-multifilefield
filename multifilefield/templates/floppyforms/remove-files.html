@@ -5,8 +5,17 @@
     {% endif %}
 
     <ul>
-    {% for choice in choices %}
-        <li class="checkbox"><label for="{{ attrs.id }}_{{ forloop.counter }}"><input {% if choice.0 in value %}checked="checked" {% endif %}type="checkbox" id="{{ attrs.id }}_{{ forloop.counter }}" name="{{ name }}" value="{{ choice.0 }}"><span class="glyphicon glyphicon-file"></span> {{ choice.1 }}</label>&nbsp;&nbsp;<a href="{{choice.2}}" target="_blank" class="preview-file">(Download)</a></li>
+    {% for choice_id, file_obj in choices %}
+        <li class="checkbox">
+            <label for="{{ attrs.id }}_{{ forloop.counter }}">
+                <input
+                    type="checkbox"
+                    id="{{ attrs.id }}_{{ forloop.counter }}"
+                    name="{{ name }}"
+                    value="{{ choice_id }}">{{ file_obj.name }}
+            </label>&nbsp;&nbsp;
+            <a href="{{file_obj.url}}" target="_blank">(Download)</a>
+        </li>
     {% endfor %}
     </ul>
 

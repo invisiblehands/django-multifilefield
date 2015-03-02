@@ -1,11 +1,9 @@
+from datetime import datetime
 from django import forms
 
-from django.core.exceptions import ValidationError
-from django.core.files import File
-from django.core.files.storage import Storage
-from django.test import TestCase
+from django.test import TestCase,
 
-from multifilefield.fields import MultiFileField
+from multifilefield.fields import MultiFileField, NoFileFieldNameException
 from multifilefield.mixins import MultiFileFieldMixin
 from multifilefield.models import UploadedFile
 
@@ -17,16 +15,18 @@ class MultiFileFieldManagerTestCase(TestCase):
     """ Let's test that the manager is working properly in
     populating the uploaded files."""
 
-    # fixtures = ['images']
+    fixtures = ['images']
+
 
     def test_init(self):
         """Test that initializing the field doesn't break."""
 
-        uploads = MultiFileField(
+        MultiFileField(
             label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
             manager = UploadedFile.objects,
+            filefield_name='upload',
             required = False,
             max_file_size = 1024*1024*5,
             max_num_files = 5,
@@ -35,11 +35,31 @@ class MultiFileFieldManagerTestCase(TestCase):
         self.assertTrue(True)
 
 
+    def test_no_filefield_name(self):
+        """Test that manager also requires filefield_name"""
+
+        self.assertRaises(NoFileFieldNameException, MultiFileField, manager = UploadedFile.objects)
+
+
+    def test_with_filefield_name(self):
+        """Test that manager also requires filefield_name"""
+
+        MultiFileField(
+            manager = UploadedFile.objects,
+            filefield_name='upload')
+
+        self.assertTrue(True)
+
+
+    def test_fixtures(self):
+        self.assertEqual(UploadedFile.objects.count(), 6)
+
+
 
 class FormWithMultiFileFieldManagerTestCase(TestCase):
     """ This TestCase is for testing the form mixin. """
 
-    # fixtures = ['images']
+    fixtures = ['images']
 
 
     def setUp(self):
@@ -52,7 +72,8 @@ class FormWithMultiFileFieldManagerTestCase(TestCase):
         class TestFormWithManager(MultiFileFieldMixin, forms.Form):
             uploads = MultiFileField(
                 label='Uploads',
-                manager = UploadedFile.objects)
+                manager = UploadedFile.objects,
+                filefield_name='upload')
 
         self.TestFormWithManager = TestFormWithManager
 
@@ -61,7 +82,5 @@ class FormWithMultiFileFieldManagerTestCase(TestCase):
         """Test that initializing the form doesn't break."""
 
         form = self.TestFormWithManager()
-
-        print form.as_p()
 
         self.assertTrue(True)

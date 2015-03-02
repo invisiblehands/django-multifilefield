@@ -18,20 +18,13 @@ class ClearableFilesWidget(forms.MultiWidget):
 class ClearCheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
     template_name = 'floppyforms/remove-files.html'
 
-    def get_context(self, name, value, attrs=None, choices=()):
+    def get_context(self, name, value, attrs=None):
         if not hasattr(value, '__iter__') or isinstance(value, six.string_types):
             value = [value]
 
         context = super(ClearCheckboxSelectMultipleWidget, self).get_context(name, value, attrs)
         context['attrs']['multiple'] = 'multiple'
-
-        new_choices = []
-        for option_value, uploaded_file in chain(self.choices, choices):
-            option_label = uploaded_file.basename
-            url = uploaded_file.get_absolute_url()
-            new_choices.append((option_value, option_label, url))
-
-        context['choices'] = new_choices
+        context['choices'] = self.choices
 
         return context
 

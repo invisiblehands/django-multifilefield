@@ -1,8 +1,5 @@
 from django import forms
 
-from django.core.exceptions import ValidationError
-from django.core.files import File
-from django.core.files.storage import Storage
 from django.test import TestCase
 
 from multifilefield.fields import MultiFileField
@@ -13,11 +10,10 @@ from multifilefield.mixins import MultiFileFieldMixin
 
 
 class MultiFileFieldNoManagerTestCase(TestCase):
-
     def test_init(self):
         """Test that initializing the field doesn't break."""
 
-        uploads = MultiFileField(
+        MultiFileField(
             label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
@@ -32,7 +28,7 @@ class MultiFileFieldNoManagerTestCase(TestCase):
     def test_init_manager(self):
         """Test that initializing without manager."""
 
-        uploads = MultiFileField(
+        MultiFileField(
             label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
@@ -47,7 +43,7 @@ class MultiFileFieldNoManagerTestCase(TestCase):
     def test_init_manager_maximum(self):
         """Test that initializing without manager and max_num_total doesn't break."""
 
-        uploads = MultiFileField(
+        MultiFileField(
             label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
@@ -64,6 +60,7 @@ class MultiFileFieldNoManagerTestCase(TestCase):
 class FormWithMultiFileFieldNoManagerTestCase(TestCase):
     """ This TestCase is for testing the form mixin. """
 
+
     def setUp(self):
         class TestFormNoManager(MultiFileFieldMixin, forms.Form):
             uploads = MultiFileField(
@@ -76,7 +73,4 @@ class FormWithMultiFileFieldNoManagerTestCase(TestCase):
         """Test that initializing the form doesn't break."""
 
         form = self.TestFormNoManager()
-
-        print form.as_p()
-
         self.assertTrue(True)

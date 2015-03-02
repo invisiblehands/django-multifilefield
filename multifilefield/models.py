@@ -6,7 +6,6 @@ from django.conf import settings
 
 
 
-
 def get_path(basename):
     return os.path.join(getattr(settings, 'MULTIFILEFIELD_ROOT', settings.MEDIA_ROOT), basename)
 

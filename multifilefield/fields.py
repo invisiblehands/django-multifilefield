@@ -5,6 +5,9 @@ from django.core.exceptions import ValidationError
 from multifilefield.widgets import ClearableFilesWidget, ClearCheckboxSelectMultipleWidget, FilesInputWidget
 
 
+class NoFileFieldNameException(Exception):
+    pass
+
 
 class RemoveFilesField(forms.MultipleChoiceField):
     """This field is a modified multiplechoicefield that displays
@@ -118,7 +121,17 @@ class MultiFileField(forms.MultiValueField):
 
         self.max_num_total  = kwargs.pop('max_num_total', None)
         self.manager        = kwargs.pop('manager', None)
+        self.filefield_name = kwargs.pop('filefield_name', None)
         self.queryset       = self.manager.all() if self.manager else []
+
+
+        if self.manager and not self.filefield_name:
+            raise NoFileFieldNameException
+
+
+        choices = []
+        for uploaded_file in self.queryset:
+            choices.append((uploaded_file.id, getattr(uploaded_file, self.filefield_name)))
 
 
         add_field = AddFilesField(
@@ -132,7 +145,7 @@ class MultiFileField(forms.MultiValueField):
         remove_field = RemoveFilesField(
             label = remove_label,
             help_text = remove_help_text,
-            choices = self.get_file_choices())
+            choices = choices)
 
 
         fields = [add_field, remove_field]
@@ -144,10 +157,6 @@ class MultiFileField(forms.MultiValueField):
             label = label,
             widget = widget,
             fields = fields)
-
-
-    def get_file_choices(self):
-        return [(file_obj.id, file_obj) for file_obj in self.queryset]
 
 
     def validate(self, data_list):

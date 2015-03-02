@@ -111,10 +111,6 @@ class FormWithMultiFileFieldManagerTestCase(TestCase):
                 manager = UploadedFile.objects,
                 filefield_name='upload')
 
-            class Meta:
-                process_files_for=['uploads']
-
-
         self.TestFormWithManager = TestFormWithManager
         self.factory = RequestFactory()
 

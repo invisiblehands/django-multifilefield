@@ -22,7 +22,6 @@ class TestCommand(Command):
     def run(self):
         from django.conf import settings
 
-
         settings.configure(
             DATABASES = {
                 'default': {
@@ -38,16 +37,12 @@ class TestCommand(Command):
 
         import django
 
-
         if django.VERSION[:2] >= (1, 7):
             from django.core.management import call_command
-
             django.setup()
-
             call_command('test', 'multifilefield')
         else:
             from multifilefield.runtests import runtests
-
             runtests()
 
 

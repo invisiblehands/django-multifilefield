@@ -81,8 +81,7 @@ setup(
     tests_require=[
         'Django>=1.6.0',
         'django-floppyforms>=1.1.1',
-        'six>=1.9.0',
-        'mock>=1.0.1'
+        'six>=1.9.0'
     ],
     cmdclass={'test': TestCommand},
     classifiers=[

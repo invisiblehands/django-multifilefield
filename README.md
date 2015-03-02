@@ -7,5 +7,5 @@ Currently broken, migrating from another application.
 
 ### Requirements
 
-- django >= 1.5
+- django >= 1.6
 - django-floppyforms>=1.1.1

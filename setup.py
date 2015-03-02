@@ -54,6 +54,7 @@ class TestCommand(Command):
             from django.core.management import call_command
 
             django.setup()
+
             call_command('test', 'multifilefield')
         else:
             from multifilefield.runtests import runtests
@@ -73,12 +74,12 @@ setup(
     author_email='cody@invisiblehands.ca',
     author='Cody Redmond',
     install_requires=[
-        'Django>=1.5.0',
+        'Django>=1.6.0',
         'django-floppyforms>=1.1.1',
         'six>=1.9.0'
     ],
     tests_require=[
-        'Django>=1.5.0',
+        'Django>=1.6.0',
         'django-floppyforms>=1.1.1',
         'six>=1.9.0',
         'mock>=1.0.1'

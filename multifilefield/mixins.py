@@ -11,6 +11,10 @@ class NoQuerySetException(Exception):
     pass
 
 
+class NoStorageException(Exception):
+    pass
+
+
 class FormNotValidException(Exception):
     pass
 
@@ -60,9 +64,12 @@ class MultiFileFieldMixin():
 
 
     def process_files_for(self, fieldname):
-        """ Cleaned multifilefield data structure is a tuple.
-            to_add (list of file to add),
-            to_remove (list of ids to remove) """
+        """ Cleaned multifilefield data structure is a tuple (arg1, arg2).
+            arg1 (to_add) = [file_obj] (list of uploaded file objects to add),
+            arg2 (to_remove) [file_id] (list of file_ids to remove).
+
+            Currently this only works with queryset argument.
+            """
 
 
         if not self.is_valid():
@@ -70,8 +77,15 @@ class MultiFileFieldMixin():
 
 
         field = self.fields[fieldname]
-        queryset = field.queryset
         storage = field.storage
+        files = field.files
+        queryset = field.queryset
+
+        if not storage:
+            raise NoStorageException
+
+        if files:
+            raise NotImplementedError, 'Requires queryset argument'
 
         if not queryset:
             raise NoQuerySetException

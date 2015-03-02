@@ -101,7 +101,7 @@ class MultiFileField(forms.MultiValueField):
     on a fileupload input to allow for multiple file uploads, if available
     through the browser.  The files are then validated.
 
-    If the developer provides a model manager, this project also provides
+    If the developer provides a queryset, this project also provides
     mechanisms for storing files and also populating clearable choices, so
     the user can both upload and clear.
     """
@@ -123,18 +123,18 @@ class MultiFileField(forms.MultiValueField):
         min_num_files   = kwargs.pop('min_num_files', 0)
 
         self.max_num_total  = kwargs.pop('max_num_total', None)
-        self.manager        = kwargs.pop('manager', None)
+        self.queryset       = kwargs.pop('queryset', None)
         self.filefield_name = kwargs.pop('filefield_name', None)
-        self.queryset       = self.manager.all() if self.manager else []
 
 
-        if self.manager and not self.filefield_name:
+        if self.queryset and not self.filefield_name:
             raise NoFileFieldNameException
 
 
         choices = []
-        for uploaded_file in self.queryset:
-            choices.append((uploaded_file.id, getattr(uploaded_file, self.filefield_name)))
+        if self.queryset:
+            for uploaded_file in self.queryset:
+                choices.append((uploaded_file.id, getattr(uploaded_file, self.filefield_name)))
 
 
         add_field = AddFilesField(
@@ -192,7 +192,7 @@ class MultiFileField(forms.MultiValueField):
             files_to_upload = data_list[0]
             files_to_delete = data_list[1]
 
-        data = (self.queryset, files_to_upload, files_to_delete)
+        data = (files_to_upload, files_to_delete)
 
         self.validate(data)
 

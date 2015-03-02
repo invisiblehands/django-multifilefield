@@ -39,23 +39,23 @@ def remove_files():
 
 @override_settings(MULTIFILEFIELD_ROOT=TEMP_FILES_DIR)
 @override_settings(MULTIFILEFIELD_URL='files')
-class MultiFileFieldManagerTestCase(TestCase):
-    """ Let's test that the manager is working properly in
+class MultiFileFieldQuerysetTestCase(TestCase):
+    """ Let's test that the queryset is working properly in
     populating the uploaded files."""
 
 
     def setUp(self):
         make_files()
+        self.queryset = UploadedFile.objects.all()
 
 
     def test_init(self):
         """Test that initializing the field doesn't break."""
 
         MultiFileField(
-            label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
-            manager = UploadedFile.objects,
+            queryset = self.queryset,
             filefield_name='upload',
             max_file_size = 1024*1024*5,
             max_num_files = 5,
@@ -65,16 +65,16 @@ class MultiFileFieldManagerTestCase(TestCase):
 
 
     def test_no_filefield_name(self):
-        """Test that manager also requires filefield_name"""
+        """Test that queryset requires filefield_name"""
 
-        self.assertRaises(NoFileFieldNameException, MultiFileField, manager = UploadedFile.objects)
+        self.assertRaises(NoFileFieldNameException, MultiFileField, queryset = self.queryset)
 
 
     def test_with_filefield_name(self):
-        """Test that manager also requires filefield_name"""
+        """Test that queryset requires filefield_name"""
 
         MultiFileField(
-            manager = UploadedFile.objects,
+            queryset = self.queryset,
             filefield_name='upload')
 
         self.assertTrue(True)
@@ -91,7 +91,7 @@ class MultiFileFieldManagerTestCase(TestCase):
 
 @override_settings(MULTIFILEFIELD_ROOT=TEMP_FILES_DIR)
 @override_settings(MULTIFILEFIELD_URL='files')
-class FormWithMultiFileFieldManagerTestCase(TestCase):
+class FormWithMultiFileFieldQuerysetTestCase(TestCase):
     """ This TestCase is for testing the form mixin. """
 
 
@@ -103,22 +103,65 @@ class FormWithMultiFileFieldManagerTestCase(TestCase):
         during initialization of the form."""
 
         make_files()
+        self.queryset = UploadedFile.objects.all()
 
-
-        class TestFormWithManager(MultiFileFieldMixin, forms.Form):
+        class TestFormWithQueryset(MultiFileFieldMixin, forms.Form):
             uploads = MultiFileField(
-                label='Uploads',
-                manager = UploadedFile.objects,
+                queryset = self.queryset,
                 filefield_name='upload')
 
-        self.TestFormWithManager = TestFormWithManager
+        self.TestFormWithQueryset = TestFormWithQueryset
         self.factory = RequestFactory()
 
 
-    def test_init_with_manager_upload_new_file(self):
-        """Test initialization of the form with a request."""
+    def test_with_queryset(self):
+        """Test form with a request."""
 
-        pth = '/fake/pth/'
+        data = {}
+        request = self.factory.post('/fake/', data=data)
+        form = self.TestFormWithQueryset(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.process_files_for('uploads')
+            cleaned_data = form.cleaned_data
+
+        self.assertEqual(len(cleaned_data.get('uploads')), 6)
+
+
+    def test_with_queryset_clear(self):
+        """Test form with a request.  Clear four files."""
+
+        data = {'uploads_1': ('1', '2', '3', '4')}
+        request = self.factory.post('/fake/', data=data)
+        form = self.TestFormWithQueryset(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.process_files_for('uploads')
+            cleaned_data = form.cleaned_data
+
+        self.assertEqual(len(cleaned_data.get('uploads')), 2)
+
+
+    def test_with_queryset_upload_new_file(self):
+        """Test form with a request.  Add new file."""
+
+        upload = SimpleUploadedFile('uploaded_file.jpeg',
+            'file_content', content_type='image/jpeg')
+
+        data = {'uploads_0': upload}
+        request = self.factory.post('/fake/', data=data)
+        form = self.TestFormWithQueryset(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.process_files_for('uploads')
+            cleaned_data = form.cleaned_data
+
+        self.assertEqual(len(cleaned_data.get('uploads')), 7)
+
+
+    def test_with_queryset_upload_new_file_clear_four(self):
+        """Test form with a request.  Add new file and clear four files."""
+
         upload = SimpleUploadedFile('uploaded_file.jpeg',
             'file_content', content_type='image/jpeg')
 
@@ -127,15 +170,14 @@ class FormWithMultiFileFieldManagerTestCase(TestCase):
             'uploads_1': ('1', '2', '3', '4')
         }
 
-        request = self.factory.post(pth, data=data)
-        form = self.TestFormWithManager(request.POST, request.FILES)
+        request = self.factory.post('/fake/', data=data)
+        form = self.TestFormWithQueryset(request.POST, request.FILES)
 
         if form.is_valid():
             form.process_files_for('uploads')
             cleaned_data = form.cleaned_data
 
         self.assertEqual(len(cleaned_data.get('uploads')), 3)
-
 
     def tearDown(self):
         remove_files()

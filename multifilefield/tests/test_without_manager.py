@@ -6,12 +6,11 @@ from multifilefield.fields import MultiFileField
 from multifilefield.mixins import MultiFileFieldMixin
 
 
-class MultiFileFieldNoManagerTestCase(TestCase):
+class MultiFileFieldTestCase(TestCase):
     def test_init(self):
         """Test that initializing the field doesn't break."""
 
         MultiFileField(
-            label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
             max_file_size = 1024*1024*5,
@@ -21,25 +20,10 @@ class MultiFileFieldNoManagerTestCase(TestCase):
         self.assertTrue(True)
 
 
-    def test_init_manager(self):
-        """Test that initializing without manager."""
+    def test_init_maximum(self):
+        """Test that initializing and max_num_total doesn't break."""
 
         MultiFileField(
-            label ='Uploads',
-            add_label='Attach files',
-            remove_label='Clear files',
-            max_file_size = 1024*1024*5,
-            max_num_files = 5,
-            min_num_files = 0)
-
-        self.assertTrue(True)
-
-
-    def test_init_manager_maximum(self):
-        """Test that initializing without manager and max_num_total doesn't break."""
-
-        MultiFileField(
-            label ='Uploads',
             add_label='Attach files',
             remove_label='Clear files',
             max_file_size = 1024*1024*5,
@@ -51,20 +35,19 @@ class MultiFileFieldNoManagerTestCase(TestCase):
 
 
 
-class FormWithMultiFileFieldNoManagerTestCase(TestCase):
+class FormWithMultiFileFieldTestCase(TestCase):
     """ This TestCase is for testing the form mixin. """
 
 
     def setUp(self):
-        class TestFormNoManager(MultiFileFieldMixin, forms.Form):
-            uploads = MultiFileField(
-                label = 'Uploads')
+        class TestForm(MultiFileFieldMixin, forms.Form):
+            uploads = MultiFileField()
 
-        self.TestFormNoManager = TestFormNoManager
+        self.TestForm = TestForm
 
 
-    def test_init_no_manager(self):
+    def test_init(self):
         """Test that initializing the form doesn't break."""
 
-        form = self.TestFormNoManager()
+        form = self.TestForm()
         self.assertTrue(True)

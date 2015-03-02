@@ -104,10 +104,14 @@ class FormWithMultiFileFieldTest(TestCase):
     def test_init_no_manager(self):
         """Test that initializing the form doesn't break."""
 
-        self.form = self.TestFormNoManager()
+        form = self.TestFormNoManager()
+
+        print form.as_p()
 
 
     def test_init_with_manager(self):
         """Test that initializing the form doesn't break."""
 
-        self.form = self.TestFormWithManager(manager=UploadedFile.objects)
+        form = self.TestFormWithManager()
+
+        print form.as_p()

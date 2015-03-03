@@ -2,7 +2,7 @@
 
 ### A pluggable django html5 filefield for multiple files
 
-Basically this allows you to easily throw in a nice html5 input for uploading and clearing multiple fields.  You can easily add in a queryset or list of files and it will handle the file procesing.  There are validators for required, amount of files (min/max) and total uploaded.  
+Easily add a nice html5 input to your django form for uploading and clearing multiple fields.  Initialize it with a queryset or list of files and it will also handle the file procesing.  There are validators for required, amount of files (min/max) and total uploaded.  
 
 ### Requirements
 

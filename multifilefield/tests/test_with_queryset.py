@@ -74,6 +74,10 @@ class MultiFileFieldQuerySetTestCase(TestCase):
         self.assertTrue(True)
 
 
+    def test_made_files(self):
+        self.assertEqual(UploadedFile.objects.count(), 6)
+
+
     def test_no_filefield_name(self):
         """Test that queryset requires filefield_name"""
 
@@ -88,10 +92,6 @@ class MultiFileFieldQuerySetTestCase(TestCase):
             filefield_name='upload')
 
         self.assertTrue(True)
-
-
-    def test_fixtures(self):
-        self.assertEqual(UploadedFile.objects.count(), 6)
 
 
     def tearDown(self):

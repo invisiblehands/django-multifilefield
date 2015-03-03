@@ -10,14 +10,14 @@ from multifilefield.tests import *
 
 
 
-class MultiFileFieldQuerySetTestCase(TestCase):
-    """ Let's test that the queryset is working properly in
+class MultiFileFieldFilesTestCase(TestCase):
+    """ Let's test that the files is working properly in
     populating the uploaded files."""
 
 
     def setUp(self):
         make_files()
-        self.queryset = UploadedFile.objects.all()
+        self.files = get_files()
         self.storage = TestStorage()
 
 
@@ -25,34 +25,8 @@ class MultiFileFieldQuerySetTestCase(TestCase):
         """Test that initializing the field doesn't break."""
 
         MultiFileField(
-            add_label='Attach files',
-            clear_label='Clear files',
             storage = self.storage,
-            queryset = self.queryset,
-            filefield_name='upload',
-            max_file_size = 1024*1024*5,
-            max_num_files = 5,
-            min_num_files = 0)
-
-        self.assertTrue(True)
-
-
-    def test_made_files(self):
-        self.assertEqual(UploadedFile.objects.count(), 6)
-
-
-    def test_no_filefield_name(self):
-        """Test that queryset requires filefield_name"""
-
-        self.assertRaises(NoFileFieldNameException, MultiFileField, queryset = self.queryset)
-
-
-    def test_with_filefield_name(self):
-        """Test that queryset requires filefield_name"""
-
-        MultiFileField(
-            queryset = self.queryset,
-            filefield_name='upload')
+            files = self.files)
 
         self.assertTrue(True)
 
@@ -74,25 +48,24 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
         during initialization of the form."""
 
         make_files()
-        self.queryset = UploadedFile.objects.all()
+        self.files = get_files()
         self.storage = TestStorage()
 
         class TestFormWithQueryset(MultiFileFieldMixin, forms.Form):
             uploads = MultiFileField(
                 storage = self.storage,
-                queryset = self.queryset,
-                filefield_name='upload')
+                files = self.files)
 
         self.TestFormWithQueryset = TestFormWithQueryset
         self.factory = RequestFactory()
 
 
-    def test_with_queryset(self):
+    def test_with_files(self):
         """Test form with a request."""
 
         data = {}
         request = self.factory.post('/fake/', data=data)
-        form = self.TestFormWithQueryset(request.POST, request.FILES)
+        form = self.TestFormWithQueryset(request.POST)
 
         if form.is_valid():
             form.process_files_for('uploads')
@@ -102,12 +75,12 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
             self.fail(form.errors)
 
 
-    def test_with_queryset_clear(self):
+    def test_with_files_clear(self):
         """Test form with a request.  Clear four files."""
 
-        data = {'uploads_1': ('1', '2', '3', '4',)}
+        data = {'uploads_1': ('image_1.jpeg', 'image_2.jpeg', 'image_3.jpeg', 'image_4.jpeg',)}
         request = self.factory.post('/fake/', data=data)
-        form = self.TestFormWithQueryset(request.POST, request.FILES)
+        form = self.TestFormWithQueryset(request.POST)
 
         if form.is_valid():
             form.process_files_for('uploads')
@@ -117,7 +90,7 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
             self.fail(form.errors)
 
 
-    def test_with_queryset_upload_new_file(self):
+    def test_with_files_upload_new_file(self):
         """Test form with a request.  Add new file."""
 
         upload = SimpleUploadedFile('uploaded_file.jpeg',
@@ -135,7 +108,7 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
             self.fail(form.errors)
 
 
-    def test_with_queryset_upload_new_file_clear_four(self):
+    def test_with_files_upload_new_file_clear_four(self):
         """Test form with a request.  Add new file and clear four files."""
 
         upload = SimpleUploadedFile('uploaded_file.jpeg',
@@ -143,7 +116,7 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
 
         data = {
             'uploads_0': upload,
-            'uploads_1': ('1', '2', '3', '4',)
+            'uploads_1': ('image_1.jpeg', 'image_2.jpeg', 'image_3.jpeg', 'image_4.jpeg',)
         }
 
         request = self.factory.post('/fake/', data=data)

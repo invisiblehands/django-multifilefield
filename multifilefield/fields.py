@@ -228,35 +228,37 @@ class MultiFileField(forms.MultiValueField):
                     'attempt_num': files_total})
 
 
+    def get_files(self):
+        files = []
+        for filename in os.listdir(self.storage.location):
+            pth = os.path.join(self.storage.location, filename)
+            with open(pth) as f:
+                files.append(File(f))
+
+        return files
 
 
     def get_processed(self):
         if self.queryset:
             return self.queryset.all()
         elif self.files:
-            raise NotImplementedError
+            return self.get_files()
 
 
-
-    def delete_file_fs(self, file_id):
-        raise NotImplementedError
+    def delete_file_fs(self, file_name):
         try:
-            uploaded_file = self.queryset.get(id = int(file_id))
-            self.storage.delete(uploaded_file.basename)
-            uploaded_file.delete()
+            self.storage.delete(file_name)
         except ValueError, e:
             pass
 
-        return uploaded_file
+        return file_name
 
 
     def upload_file_fs(self, file_obj):
-        raise NotImplementedError
         relpath = os.path.normpath(self.storage.get_valid_name(os.path.basename(file_obj.name)))
         filename = self.storage.save(relpath, file_obj)
-        uploaded_file = self.queryset.create(upload = filename)
 
-        return uploaded_file
+        return file_obj
 
 
     def delete_file_queryset(self, file_id):

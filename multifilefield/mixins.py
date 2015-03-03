@@ -1,8 +1,3 @@
-import os
-
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-
 from .fields import MultiFileField
 
 
@@ -21,35 +16,6 @@ class FormNotValidException(Exception):
 
 
 class MultiFileFieldMixin():
-    def delete_file(self, storage, queryset, file_id):
-        try:
-            uploaded_file = queryset.get(id = int(file_id))
-            storage.delete(uploaded_file.basename)
-            uploaded_file.delete()
-        except ValueError, e:
-            pass
-
-        return uploaded_file
-
-
-    def upload_file(self, storage, queryset, file_obj):
-        relpath = os.path.normpath(storage.get_valid_name(os.path.basename(file_obj.name)))
-        filename = storage.save(relpath, file_obj)
-        uploaded_file = queryset.create(upload = filename)
-
-        return uploaded_file
-
-
-    def delete_files(self, storage, queryset, file_ids):
-        files = [self.delete_file(storage, queryset, file_id) for file_id in file_ids]
-        return files
-
-
-    def upload_files(self, storage, queryset, files):
-        files = [self.upload_file(storage, queryset, file_obj) for file_obj in files]
-        return files
-
-
     def process_files(self):
         """ Process files for each field that is a multifilefield.
             """
@@ -78,18 +44,9 @@ class MultiFileFieldMixin():
 
         field = self.fields[fieldname]
         storage = field.storage
-        files = field.files
-        queryset = field.queryset
 
         if not storage:
             raise NoStorageException
-
-        if files:
-            raise NotImplementedError, 'Requires queryset argument'
-
-        if not queryset:
-            raise NoQuerySetException
-
 
         field_data = self.cleaned_data.pop(fieldname, None)
 
@@ -99,18 +56,11 @@ class MultiFileFieldMixin():
             removed = field_data[1]
 
             if removed:
-                self.delete_files(storage, queryset, removed)
+                field.delete_files(removed)
 
             if added:
-                 self.upload_files(storage, queryset, added)
+                 field.upload_files(added)
 
-            processed_data = queryset.all()
-            self.cleaned_data[fieldname] = processed_data
+            self.cleaned_data[fieldname] = processed_data = field.get_processed()
 
         return processed_data
-
-
-
-def process_form(form):
-    ids = form.process_files('uploads')
-    return ids

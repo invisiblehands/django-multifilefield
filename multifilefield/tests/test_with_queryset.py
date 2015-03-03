@@ -1,49 +1,12 @@
-import os, shutil, tempfile
-
 from datetime import datetime
 from django import forms
-from django.test.utils import override_settings
 from django.test import TestCase, RequestFactory
-from django.contrib.auth.models import AnonymousUser, User
-from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from multifilefield.fields import MultiFileField, NoFileFieldNameException
 from multifilefield.mixins import MultiFileFieldMixin
 from multifilefield.models import UploadedFile
-
-
-TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), 'files')
-TEMP_FILES_DIR = tempfile.mkdtemp(dir=os.path.dirname(__file__))
-
-
-class TestStorage(FileSystemStorage):
-    def __init__(self, *args, **kwargs):
-        super(TestStorage, self).__init__(*args, **kwargs)
-
-        self.location = TEMP_FILES_DIR
-        self.base_url = '/files/'
-
-
-
-def make_files():
-    if not os.access(TEMP_FILES_DIR, os.F_OK):
-        os.makedirs(TEMP_FILES_DIR)
-
-
-    for filename in os.listdir(TEST_FILES_DIR):
-        src = os.path.join(TEST_FILES_DIR, filename)
-        dest = os.path.join(TEMP_FILES_DIR, filename)
-        shutil.copyfile(src, dest)
-
-
-    tmp_files = [os.path.join(TEMP_FILES_DIR, filename) for filename in os.listdir(TEMP_FILES_DIR)]
-    bulk = [UploadedFile(upload=tmp_file) for tmp_file in tmp_files]
-    UploadedFile.objects.bulk_create(bulk)
-
-
-def remove_files():
-    shutil.rmtree(TEMP_FILES_DIR)
+from multifilefield.tests import *
 
 
 
@@ -134,8 +97,9 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
         if form.is_valid():
             form.process_files_for('uploads')
             cleaned_data = form.cleaned_data
-
-        self.assertEqual(len(cleaned_data.get('uploads')), 6)
+            self.assertEqual(len(cleaned_data.get('uploads')), 6)
+        else:
+            self.fail(form.errors)
 
 
     def test_with_queryset_clear(self):
@@ -148,8 +112,9 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
         if form.is_valid():
             form.process_files_for('uploads')
             cleaned_data = form.cleaned_data
-
-        self.assertEqual(len(cleaned_data.get('uploads')), 2)
+            self.assertEqual(len(cleaned_data.get('uploads')), 2)
+        else:
+            self.fail(form.errors)
 
 
     def test_with_queryset_upload_new_file(self):
@@ -165,8 +130,9 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
         if form.is_valid():
             form.process_files_for('uploads')
             cleaned_data = form.cleaned_data
-
-        self.assertEqual(len(cleaned_data.get('uploads')), 7)
+            self.assertEqual(len(cleaned_data.get('uploads')), 7)
+        else:
+            self.fail(form.errors)
 
 
     def test_with_queryset_upload_new_file_clear_four(self):
@@ -186,8 +152,9 @@ class FormWithMultiFileFieldQuerySetTestCase(TestCase):
         if form.is_valid():
             form.process_files_for('uploads')
             cleaned_data = form.cleaned_data
-
-        self.assertEqual(len(cleaned_data.get('uploads')), 3)
+            self.assertEqual(len(cleaned_data.get('uploads')), 3)
+        else:
+            self.fail(form.errors)
 
 
     def tearDown(self):

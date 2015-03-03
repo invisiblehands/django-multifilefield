@@ -1,4 +1,4 @@
-import math, floppyforms as forms
+import os, math, floppyforms as forms
 
 from django.core.exceptions import ValidationError
 from django.core.files import File
@@ -226,4 +226,79 @@ class MultiFileField(forms.MultiValueField):
                 raise ValidationError(self.error_messages['total_num'] % {
                     'total_num': max_num_total,
                     'attempt_num': files_total})
+
+
+
+
+    def get_processed(self):
+        if self.queryset:
+            return self.queryset.all()
+        elif self.files:
+            raise NotImplementedError
+
+
+
+    def delete_file_fs(self, file_id):
+        raise NotImplementedError
+        try:
+            uploaded_file = self.queryset.get(id = int(file_id))
+            self.storage.delete(uploaded_file.basename)
+            uploaded_file.delete()
+        except ValueError, e:
+            pass
+
+        return uploaded_file
+
+
+    def upload_file_fs(self, file_obj):
+        raise NotImplementedError
+        relpath = os.path.normpath(self.storage.get_valid_name(os.path.basename(file_obj.name)))
+        filename = self.storage.save(relpath, file_obj)
+        uploaded_file = self.queryset.create(upload = filename)
+
+        return uploaded_file
+
+
+    def delete_file_queryset(self, file_id):
+        try:
+            uploaded_file = self.queryset.get(id = int(file_id))
+            self.storage.delete(uploaded_file.basename)
+            uploaded_file.delete()
+        except ValueError, e:
+            pass
+
+        return uploaded_file
+
+
+    def upload_file_queryset(self, file_obj):
+        relpath = os.path.normpath(self.storage.get_valid_name(os.path.basename(file_obj.name)))
+        filename = self.storage.save(relpath, file_obj)
+        uploaded_file = self.queryset.create(upload = filename)
+
+        return uploaded_file
+
+
+    def delete_files(self, file_ids):
+        if self.queryset:
+            mth = self.delete_file_queryset
+        elif self.files:
+            mth = self.delete_file_fs
+        else:
+            raise NotImplementedError
+
+        files = [mth(file_id) for file_id in file_ids]
+        return files
+
+
+    def upload_files(self, files):
+        if self.queryset:
+            mth = self.upload_file_queryset
+        elif self.files:
+            mth = self.upload_file_fs
+        else:
+            raise NotImplementedError
+
+        files = [mth(file_obj) for file_obj in files]
+        return files
+
 
